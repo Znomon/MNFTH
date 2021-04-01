@@ -1,3 +1,5 @@
+const { assert } = require('chai')
+
 const MNFTH = artifacts.require('./MNFTH.sol')
 
 require('chai')
@@ -32,6 +34,14 @@ contract('MNFTH', (accounts) => {
 
   })
 
+  describe('ownerHasAllTokens', async () => {
+    it('checksOwnerTokens', async () => {
+      const ownerTokens = await contract.balanceOf('0x63f8012E9568317dCf3e15e0B066A0c54034d121')
+
+      assert.equal(ownerTokens,1000000, 'Correct number of owner tokens')
+
+    })
+  })
 
   describe('minting', async () => {
 
