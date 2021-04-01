@@ -33,9 +33,9 @@ contract MNFTH is ERC721Full {
       return _tokenId != 0 && _tokenId <= maxId;
   }
 
-//   function balanceOf(address _owner) external view returns (uint256){
-//       return balances[_owner];
-//   }
+   function balanceOf(address _owner) public view returns (uint256){
+       return balances[_owner];
+   }
 
   function ownerOf(uint256 _tokenId) public view returns(address){
       require(isValidToken(_tokenId));
