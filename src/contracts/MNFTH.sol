@@ -4,25 +4,26 @@ import "./ERC721Full.sol";
 
 contract MNFTH is ERC721Full {
   using SafeMath for uint256;
-  string[] public colors;
-  mapping(string => bool) _colorExists;
+  //string[] public colors;
+  //mapping(string => bool) _colorExists;
 
   //ID of pixels created
   using Counters for Counters.Counter;
   Counters.Counter private _pixelIdTracker;
 
   address public _writer;
-  mapping (uint256 => address) internal owners;
   mapping (address => uint256) internal balances;
   uint256 internal maxId;
   //mapping (uint256 => bool) internal burned;
 
-  uint256 _initialSupply = 1000000;
+  mapping (uint256 => string) public colorArray;
 
-  constructor()ERC721Full("Million NFT Home Page", "MNFTH") public { //this somehow worked lol
+  uint256 _initialSupply = 10000;
+
+  constructor()ERC721Full("Million NFT Home Page", "MNFTH") public { 
       _writer = msg.sender; //Owner of the contract is the one who deploys it
       
-      balances[msg.sender] = _initialSupply; //Set contract owner to all initial tokens
+      //balances[msg.sender] = _initialSupply; //Set contract owner to all initial tokens
       
       maxId = _initialSupply; //Set maxId to number of tokens
 
@@ -33,37 +34,54 @@ contract MNFTH is ERC721Full {
       return _tokenId != 0 && _tokenId <= maxId;
   }
 
-   function balanceOf(address _owner) public view returns (uint256){
-       return balances[_owner];
-   }
+  // function initialDistribution() private {
+  //     require(balances[msg.sender] < 5); //only people with less than 5 tokens can mint FIX ME
+  //     balances[msg.sender] = balances[msg.sender].add(1); //setting to 1 as an example FIX ME
+  //     emit Transfer(_writer, msg.sender, 1); //emit transfer of token
 
-  function ownerOf(uint256 _tokenId) public view returns(address){
-      require(isValidToken(_tokenId));
-      if(owners[_tokenId] != _writer){
-          return owners[_tokenId];
-      }else{
-          return _writer;
-      }
+  // }
+
+  function mintPixel(uint256 token_id, string memory color) public returns (uint256) { //where tokenURI is json file containing, x coord, y coord, owner, price,
+    
+    //####### this might not even be needed due to the ERC721 contract already handling this ############
+    //function mintPixel(uint256 token_id, address user, string memory tokenURI) public returns (uint256) { //where tokenURI is json file containing, x coord, y coord, owner, price,
+    //ERC 721 handles minting tokens that already have an owner, through the require()
+    //just need to double check that the rest of the code is using that library
+    
+    require(isValidToken(token_id), "Invalid token ID"); 
+    //validate pixel has not been created before
+    //require(ownerOf(token_id) == _writer, "This token is owned by someone, therefore can't be minted");
+
+    //#################### END #############
+
+    //_pixelIdTracker.increment();  //not needed since pixelID will be handled on web client side
+    //uint256 newPixelID = _pixelIdTracker.current();
+    
+    _mint(msg.sender, token_id);
+    colorArray[token_id] = color;
+    //_setTokenURI(token_id, tokenURI);
+    
+    //updatePixelMapping() //file read by website for quick load
+
+    return token_id;
   }
 
-  function initialDistribution() private {
-      require(balances[msg.sender] < 5); //only people with less than 5 tokens can mint FIX ME
-      balances[msg.sender] = balances[msg.sender].add(1); //setting to 1 as an example FIX ME
-      emit Transfer(_writer, msg.sender, 1); //emit transfer of token
+  function updatePixelMapping(uint256 token_id, string memory color) public returns (uint256) {
+    require(isValidToken(token_id), "Invalid token ID"); 
+    require(ownerOf(token_id) == msg.sender, "You do not own this pixel"); 
+
+    //verify color is valid? any security risk?
+
+    colorArray[token_id] = color; //update color on blockchain
+    //update token URI? probably
 
   }
 
-   // E.G. color = "#FFFFFF"
-  function mint(string memory _color) public {
-    require(!_colorExists[_color]);
-    uint _id = colors.push(_color);
-    _mint(msg.sender, _id); 
-    _colorExists[_color] = true;
+  function readColor(uint256 token_id) public view returns(string memory){
+    return colorArray[token_id];
   }
 
-//   function setColor(string memory _color, uint256 _tokenID) public {
-//     //require(_tokenID.owner == msg.sender);
-
-//     _tokenID.color = _color;
-//   }
+  // function bulkBuyPixels(uint token_id, uint x, uint y) public {
+  //   for(uint i=0; i < x;)
+  // }
 }

@@ -543,7 +543,7 @@ contract ERC721 is ERC165, IERC721 {
         address owner = ownerOf(tokenId);
         return (spender == owner || getApproved(tokenId) == spender || isApprovedForAll(owner, spender));
     }
-
+  
     /**
      * @dev Internal function to mint a new token.
      * Reverts if the given token ID already exists.

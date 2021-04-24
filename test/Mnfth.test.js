@@ -34,19 +34,19 @@ contract('MNFTH', (accounts) => {
 
   })
 
-  describe('ownerHasAllTokens', async () => {
-    it('checksOwnerTokens', async () => {
-      const ownerTokens = await contract.balanceOf('0x63f8012E9568317dCf3e15e0B066A0c54034d121')
+  // describe('ownerHasAllTokens', async () => {
+  //   it('checksOwnerTokens', async () => {
+  //     const ownerTokens = await contract.balanceOf('0x63f8012E9568317dCf3e15e0B066A0c54034d121')
 
-      assert.equal(ownerTokens,1000000, 'Correct number of owner tokens')
+  //     assert.equal(ownerTokens,1000000, 'Correct number of owner tokens')
 
-    })
-  })
+  //   })
+  // })
 
   describe('minting', async () => {
 
     it('creates a new token', async () => {
-      const result = await contract.mint('#EC058E')
+      const result = await contract.mintPixel('1','#EC058E')
       const totalSupply = await contract.totalSupply()
       // SUCCESS
       assert.equal(totalSupply, 1)
@@ -55,24 +55,26 @@ contract('MNFTH', (accounts) => {
       assert.equal(event.from, '0x0000000000000000000000000000000000000000', 'from is correct')
       assert.equal(event.to, accounts[0], 'to is correct')
 
+      //await contract.mintPixel('31','#EC058E')
       // FAILURE: cannot mint same color twice
-      await contract.mint('#EC058E').should.be.rejected;
+      await contract.mintPixel('1','#EC058E').should.be.rejected;
+      
     })
   })
 
   describe('indexing', async () => {
     it('lists colors', async () => {
       // Mint 3 more tokens
-      await contract.mint('#5386E4')
-      await contract.mint('#FFFFFF')
-      await contract.mint('#000000')
+      await contract.mintPixel('2','#5386E4')
+      await contract.mintPixel('3','#FFFFFF')
+      await contract.mintPixel('4','#000000')
       const totalSupply = await contract.totalSupply()
 
       let color
       let result = []
 
       for (var i = 1; i <= totalSupply; i++) {
-        color = await contract.colors(i - 1)
+        color = await contract.readColor(i)
         result.push(color)
       }
 
@@ -81,6 +83,24 @@ contract('MNFTH', (accounts) => {
     })
   })
 
-  
+  describe('changing the color of a token', async () => {
 
+    it('exists and owner', async () => {
+      await contract.mintPixel('5','#000000')
+      const result = await contract.ownerOf('5')
+      assert.equal(result,'0x63f8012E9568317dCf3e15e0B066A0c54034d121')
+      await contract.updatePixelMapping('5','#AAAAAA')
+      
+    })
+    it('not owner', async () => {
+      await contract.mintPixel('6','#000000',{from: accounts[1]})
+      await contract.updatePixelMapping('6','#BBBBBB',{from: accounts[2]}).should.be.rejected
+    })
+    it('non-existant', async () => {
+      await contract.updatePixelMapping('55','#AAAAAA').should.be.rejected
+    })
+    
+
+      
+  })
 })
